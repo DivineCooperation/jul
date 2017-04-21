@@ -31,12 +31,14 @@ import org.openbase.jul.exception.InitializationException;
 public interface VoidInitializable extends DefaultInitializableImpl<Void> {
 
     @Override
-    public default void init(Void config) throws InitializationException, InterruptedException {
-        init();
-    }
+    public void init(Void config) throws InitializationException, InterruptedException;
+//    public default void init(Void config) throws InitializationException, InterruptedException {
+//        init();
+//    }
     
     @Override
-    public default Void getDefaultConfig() {
-        return null;
-    }
+    public Void getDefaultConfig();
+//    public default Void getDefaultConfig() {
+//        return null;
+//    }
 }
