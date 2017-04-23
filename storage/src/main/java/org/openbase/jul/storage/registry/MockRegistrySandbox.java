@@ -200,4 +200,15 @@ public class MockRegistrySandbox<KEY, ENTRY extends Identifiable<KEY>, MAP exten
     public void unlockRegistry() {
         // MockRegistrySandbox is not unlockable
     }
+
+    // BEGIN DEFAULT INTERFACE METHODS
+    public boolean isWritable() {
+        try {
+            checkWriteAccess();
+        } catch (RejectedException ex) {
+            return false;
+        }
+        return true;
+    }
+    // END DEFAULT INTERFACE METHODS
 }

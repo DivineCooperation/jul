@@ -42,12 +42,13 @@ public interface Writable {
      *
      * @return
      */
-    default public boolean isWritable() {
-        try {
-            checkWriteAccess();
-        } catch (RejectedException ex) {
-            return false;
-        }
-        return true;
-    }
+    public boolean isWritable();
+//    default public boolean isWritable() {
+//        try {
+//            checkWriteAccess();
+//        } catch (RejectedException ex) {
+//            return false;
+//        }
+//        return true;
+//    }
 }

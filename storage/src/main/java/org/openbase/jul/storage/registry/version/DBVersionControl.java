@@ -108,11 +108,23 @@ public class DBVersionControl {
     }
 
     public DBVersionControl(final String entryType, final FileProvider entryFileProvider, final Package converterPackage, final File databaseDirectory) throws InstantiationException {
-        this(entryType, entryFileProvider, converterPackage, databaseDirectory, () -> {
-            if (!databaseDirectory.canWrite()) {
-                throw new RejectedException("db directory not writable!");
+        this(entryType, entryFileProvider, converterPackage, databaseDirectory, new Writable() {
+            @Override
+            public void checkWriteAccess() throws RejectedException {
+                if (!databaseDirectory.canWrite()) {
+                    throw new RejectedException("db directory not writable!");
+                }
             }
-        });
+
+            @Override
+            public boolean isWritable() {
+                try {
+                    checkWriteAccess();
+                } catch (RejectedException ex) {
+                    return false;
+                }
+                return true;
+            }});
     }
 
     public void validateAndUpgradeDBVersion() throws CouldNotPerformException {

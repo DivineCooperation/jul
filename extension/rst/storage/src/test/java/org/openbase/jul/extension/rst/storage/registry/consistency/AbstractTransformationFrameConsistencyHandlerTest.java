@@ -148,6 +148,16 @@ public class AbstractTransformationFrameConsistencyHandlerTest {
                 }
 
                 @Override
+                public boolean isWritable() {
+                    try {
+                        checkWriteAccess();
+                    } catch (RejectedException ex) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                @Override
                 public void loadRegistry() throws CouldNotPerformException {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }

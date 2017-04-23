@@ -43,6 +43,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Processable;
 import org.openbase.jul.iface.Shutdownable;
 import static org.openbase.jul.schedule.GlobalScheduledExecutorService.getInstance;
+
+import org.openbase.jul.iface.Shutdownable$;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +95,7 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
     public AbstractExecutorService(final ES executorService) {
         this.executorService = executorService;
         this.initReportService();
-        Shutdownable.registerShutdownHook(this, DEFAULT_SHUTDOWN_DELAY);
+        Shutdownable$.registerShutdownHook(this, DEFAULT_SHUTDOWN_DELAY);
     }
 
     private Runnable initReportService() {

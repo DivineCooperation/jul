@@ -49,6 +49,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.Shutdownable$;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -114,7 +115,7 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
                 }
             };
 
-            Shutdownable.registerShutdownHook(this);
+            Shutdownable$.registerShutdownHook(this);
             finishTransaction();
             notifyObservers();
         } catch (CouldNotPerformException ex) {
@@ -1082,4 +1083,19 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
             removeObserver(this);
         }
     }
+
+    /////////////
+    // START DEFAULT INTERFACE METHODS
+    /////////////
+    public boolean isWritable() {
+        try {
+            checkWriteAccess();
+        } catch (RejectedException ex) {
+            return false;
+        }
+        return true;
+    }
+    /////////////
+    // END DEFAULT INTERFACE METHODS
+    /////////////
 }
