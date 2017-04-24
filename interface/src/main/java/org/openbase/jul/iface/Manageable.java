@@ -33,13 +33,14 @@ import org.slf4j.LoggerFactory;
 public interface Manageable<CONFIG> extends Initializable<CONFIG>, Shutdownable, Activatable {
 
     @Override
-    public default void shutdown() {
-        try {
-            deactivate();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LoggerFactory.getLogger(getClass()));
-        }
-    }
+    public void shutdown();
+//    public default void shutdown() {
+//        try {
+//            deactivate();
+//        } catch (InterruptedException ex) {
+//            Thread.currentThread().interrupt();
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LoggerFactory.getLogger(getClass()));
+//        }
+//    }
 }
