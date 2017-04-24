@@ -46,12 +46,15 @@ public interface GlobalDBVersionConverter extends DBVersionConverter {
      * @return the upgraded database entry.
      * @throws CouldNotPerformException can be thrown in case the upgrade could not be performed.
      */
-    default public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot, final Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
-        return upgrade(outdatedDBEntry, dbSnapshot);
-    }
+    public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot, final Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException;
+//    default public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot, final Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
+//        return upgrade(outdatedDBEntry, dbSnapshot);
+//    }
 
     @Override
-    default public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
-        throw new NotSupportedException("upgrade", this);
-    }
+    public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException;
+//    @Override
+//    default public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
+//        throw new NotSupportedException("upgrade", this);
+//    }
 }

@@ -22,6 +22,13 @@ package org.openbase.jul.storage.registry.version;
  * #L%
  */
 
+import com.google.gson.JsonObject;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotSupportedException;
+
+import java.io.File;
+import java.util.Map;
+
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
@@ -30,6 +37,15 @@ public abstract class AbstractGlobalDBVersionConverter extends AbstractDBVersion
 
     public AbstractGlobalDBVersionConverter(DBVersionControl versionControl) {
         super(versionControl);
+    }
+
+    public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot, final Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
+        return upgrade(outdatedDBEntry, dbSnapshot);
+    }
+
+    @Override
+    public JsonObject upgrade(final JsonObject outdatedDBEntry, final Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
+        throw new NotSupportedException("upgrade", this);
     }
 
 }
