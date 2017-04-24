@@ -100,16 +100,17 @@ public interface Remote<M> extends Shutdownable, Activatable, Lockable, DataProv
      * @throws CouldNotPerformException In case something went wrong a
      * CouldNotPerformException is thrown.
      */
-    public default CompletableFuture<M> getDataFuture() throws CouldNotPerformException {
-         try {
-            if (!isDataAvailable()) {
-                return requestData();
-            }
-            return CompletableFuture.completedFuture(getData());
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("data", ex);
-        }
-    }
+    public CompletableFuture<M> getDataFuture() throws CouldNotPerformException;
+//    public default CompletableFuture<M> getDataFuture() throws CouldNotPerformException {
+//        try {
+//            if (!isDataAvailable()) {
+//                return requestData();
+//            }
+//            return CompletableFuture.completedFuture(getData());
+//        } catch (CouldNotPerformException ex) {
+//            throw new NotAvailableException("data", ex);
+//        }
+//    }
 
     /**
      * Method blocks until an initial data message was received from the remote controller.

@@ -1297,4 +1297,20 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
     private static long generateTimeout(long currentTimeout) {
         return Math.min(METHOD_CALL_MAX_TIMEOUT, (long) (currentTimeout * METHOD_CALL_TIMEOUT_MULTIPLIER + (JITTER_RANDOM.nextDouble() * 1000)));
     }
+
+    ///////////////
+    // START DEFAULT INTERFACE METHODS
+
+    public CompletableFuture<M> getDataFuture() throws CouldNotPerformException {
+        try {
+            if (!isDataAvailable()) {
+                return requestData();
+            }
+            return CompletableFuture.completedFuture(getData());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("data", ex);
+        }
+    }
+    // END DEFAULT INTERACE METHODS
+    ///////////////
 }
