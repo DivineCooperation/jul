@@ -24,6 +24,9 @@ package org.openbase.jul.storage.registry;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -168,4 +171,18 @@ public class ProtoBufFileSynchronizedRegistry<KEY extends Comparable<KEY>, M ext
     public IdGenerator<KEY, M> getIdGenerator() {
         return idGenerator;
     }
+
+    ///////////
+    // START DEFAULT INTERFACE METHODS
+
+    public List<M> getMessages() throws CouldNotPerformException {
+        final List<M> messageList = new ArrayList<>();
+        for (final IdentifiableMessage<KEY, M, MB> identifiableMessage : getEntries()) {
+            messageList.add(identifiableMessage.getMessage());
+        }
+        return messageList;
+    }
+
+    // END DEFAULT INTERFACE METHODS
+    ///////////
 }

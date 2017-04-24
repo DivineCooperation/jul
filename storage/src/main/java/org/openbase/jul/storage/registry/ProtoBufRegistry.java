@@ -46,13 +46,14 @@ public interface ProtoBufRegistry<KEY, M extends GeneratedMessage, MB extends M.
 
     public M getMessage(final KEY key) throws CouldNotPerformException;
 
-    default public List<M> getMessages() throws CouldNotPerformException {
-        final List<M> messageList = new ArrayList<>();
-        for (final IdentifiableMessage<KEY, M, MB> identifiableMessage : getEntries()) {
-            messageList.add(identifiableMessage.getMessage());
-        }
-        return messageList;
-    }
+//    default public List<M> getMessages() throws CouldNotPerformException {
+//        final List<M> messageList = new ArrayList<>();
+//        for (final IdentifiableMessage<KEY, M, MB> identifiableMessage : getEntries()) {
+//            messageList.add(identifiableMessage.getMessage());
+//        }
+//        return messageList;
+//    }
+    public List<M> getMessages() throws CouldNotPerformException;
 
     public MB getBuilder(final KEY key) throws CouldNotPerformException;
 }

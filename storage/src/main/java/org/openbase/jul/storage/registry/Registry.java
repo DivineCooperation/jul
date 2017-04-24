@@ -49,9 +49,10 @@ public interface Registry<KEY, ENTRY extends Identifiable<KEY>> extends Writable
 
     public ENTRY get(final KEY key) throws CouldNotPerformException;
 
-    default public ENTRY get(final ENTRY entry) throws CouldNotPerformException {
-        return get(entry.getId());
-    }
+//    default public ENTRY get(final ENTRY entry) throws CouldNotPerformException {
+//        return get(entry.getId());
+//    }
+    public ENTRY get(final ENTRY entry) throws CouldNotPerformException;
 
     public List<ENTRY> getEntries() throws CouldNotPerformException;
 
@@ -90,9 +91,10 @@ public interface Registry<KEY, ENTRY extends Identifiable<KEY>> extends Writable
      * @deprecated removed because of typo. Please use isEmpty() instead!
      */
     @Deprecated
-    default public boolean isEmtpy() {
-        return isEmpty();
-    }
+//    default public boolean isEmtpy() {
+//        return isEmpty();
+//    }
+    public boolean isEmtpy();
 
     public boolean tryLockRegistry() throws RejectedException;
 

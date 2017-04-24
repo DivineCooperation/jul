@@ -1095,6 +1095,14 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
         }
         return true;
     }
+
+    public ENTRY get(final ENTRY entry) throws CouldNotPerformException {
+        return get(entry.getId());
+    }
+
+    public boolean isEmtpy() {
+        return isEmpty();
+    }
     /////////////
     // END DEFAULT INTERFACE METHODS
     /////////////

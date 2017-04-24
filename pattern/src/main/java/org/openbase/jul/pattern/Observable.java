@@ -54,14 +54,15 @@ public interface Observable<T> extends Shutdownable {
      * @throws CouldNotPerformException is thrown if an error occurs before the thread was blocked.
      * @throws InterruptedException is thrown if the current thread was interrupted externally.
      */
-    default public void waitForValue() throws CouldNotPerformException, InterruptedException {
-        try {
-            waitForValue(0, TimeUnit.MILLISECONDS);
-        } catch (NotAvailableException ex) {
-            // Should never happen because no timeout was given.
-            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Observable has notified without valid value!", this, ex), LoggerFactory.getLogger(getClass()));
-        }
-    }
+//    default public void waitForValue() throws CouldNotPerformException, InterruptedException {
+//        try {
+//            waitForValue(0, TimeUnit.MILLISECONDS);
+//        } catch (NotAvailableException ex) {
+//            // Should never happen because no timeout was given.
+//            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Observable has notified without valid value!", this, ex), LoggerFactory.getLogger(getClass()));
+//        }
+//    }
+    public void waitForValue() throws CouldNotPerformException, InterruptedException;
 
     /**
      * Method registers the given observer to this observable to get informed about value changes.
@@ -99,8 +100,10 @@ public interface Observable<T> extends Shutdownable {
      * @throws NotAvailableException
      * @deprecated please use {@link #getValue()} instead.
      */
+//    @Deprecated
+//    default public T getLatestValue() throws NotAvailableException {
+//        return getValue();
+//    }
     @Deprecated
-    default public T getLatestValue() throws NotAvailableException {
-        return getValue();
-    }
+    public T getLatestValue() throws NotAvailableException;
 }

@@ -29,8 +29,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.MultiException.ExceptionStack;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -281,4 +287,24 @@ public abstract class AbstractObservable<T> implements Observable<T> {
     protected int computeHash(final T value) {
         return value.hashCode();
     }
+
+    ////////////
+    // START DEFAULT INTERFACE METHODS
+
+    @Deprecated
+    public T getLatestValue() throws NotAvailableException {
+        return getValue();
+    }
+
+    public void waitForValue() throws CouldNotPerformException, InterruptedException {
+        try {
+            waitForValue(0, TimeUnit.MILLISECONDS);
+        } catch (NotAvailableException ex) {
+            // Should never happen because no timeout was given.
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Observable has notified without valid value!", this, ex), LoggerFactory.getLogger(getClass()));
+        }
+    }
+
+    // END DEFAULT INTERFACE METHODS
+    ////////////
 }

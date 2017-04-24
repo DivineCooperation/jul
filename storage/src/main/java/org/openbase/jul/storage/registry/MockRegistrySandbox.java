@@ -25,10 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.pattern.Observer;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -165,7 +168,7 @@ public class MockRegistrySandbox<KEY, ENTRY extends Identifiable<KEY>, MAP exten
     public boolean isValueAvailable() {
         return true;
     }
-    
+
     @Override
     public void shutdown() {
         // Not needed for mock sandbox!
@@ -209,6 +212,29 @@ public class MockRegistrySandbox<KEY, ENTRY extends Identifiable<KEY>, MAP exten
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Map<KEY, ENTRY> getLatestValue() throws NotAvailableException {
+        return getValue();
+    }
+
+    public void waitForValue() throws CouldNotPerformException, InterruptedException {
+        try {
+            waitForValue(0, TimeUnit.MILLISECONDS);
+        } catch (NotAvailableException ex) {
+            // Should never happen because no timeout was given.
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Observable has notified without valid value!", this, ex), LoggerFactory.getLogger(getClass()));
+        }
+    }
+
+    @Deprecated
+    public boolean isEmtpy() {
+        return isEmpty();
+    }
+
+    public ENTRY get(final ENTRY entry) throws CouldNotPerformException {
+        return get(entry.getId());
     }
     // END DEFAULT INTERFACE METHODS
 }

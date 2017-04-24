@@ -33,14 +33,18 @@ import org.junit.Test;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
+import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType;
@@ -224,7 +228,7 @@ public class AbstractTransformationFrameConsistencyHandlerTest {
                 public boolean isEmpty() {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                
+
                 @Override
                 public boolean isReady() {
                     throw new UnsupportedOperationException("Not supported yet.");
@@ -234,6 +238,7 @@ public class AbstractTransformationFrameConsistencyHandlerTest {
                 public boolean isValueAvailable() {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
+
 
                 @Override
                 public void shutdown() {
@@ -334,6 +339,31 @@ public class AbstractTransformationFrameConsistencyHandlerTest {
                 public void unlockRegistry() {
                     // Not supported
                 }
+
+                @Override
+                public boolean isEmtpy() {
+                    return isEmpty();
+                }
+
+                @Override
+                public IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> get(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
+                    return get(entry.getId());
+                }
+
+                @Override
+                public Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> getLatestValue() throws NotAvailableException {
+                    return getValue();
+                }
+
+                public void waitForValue() throws CouldNotPerformException, InterruptedException {
+                    try {
+                        waitForValue(0, TimeUnit.MILLISECONDS);
+                    } catch (NotAvailableException ex) {
+                        // Should never happen because no timeout was given.
+                        ExceptionPrinter.printHistory(new FatalImplementationErrorException("Observable has notified without valid value!", this, ex), LoggerFactory.getLogger(getClass()));
+                    }
+                }
+
             });
         }
 

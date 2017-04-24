@@ -30,6 +30,9 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapWrapper;
 import org.openbase.jul.storage.registry.clone.ProtoBufCloner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -80,4 +83,18 @@ public class ProtoBufFileSynchronizedRegistrySandbox<KEY extends Comparable<KEY>
     public IdGenerator<KEY, M> getIdGenerator() {
         return idGenerator;
     }
+
+    ///////////
+    // START DEFAULT INTERFACE METHODS
+
+    public List<M> getMessages() throws CouldNotPerformException {
+        final List<M> messageList = new ArrayList<>();
+        for (final IdentifiableMessage<KEY, M, MB> identifiableMessage : getEntries()) {
+            messageList.add(identifiableMessage.getMessage());
+        }
+        return messageList;
+    }
+
+    // END DEFAULT INTERFACE METHODS
+    ///////////
 }
