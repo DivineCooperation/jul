@@ -24,7 +24,7 @@ package org.openbase.jul.extension.rsb.com;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-import java.util.concurrent.CompletableFuture;
+import java8.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
