@@ -24,6 +24,9 @@ package org.openbase.jul.storage.registry.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -62,12 +65,15 @@ public class RegistryPluginPool<KEY, ENTRY extends Identifiable<KEY>, P extends 
 
     @Override
     public void shutdown() {
-        pluginList.stream().forEach((plugin) -> {
-            try {
-                plugin.shutdown();
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not shutdown RegistryPlugin[" + plugin + "]!", ex), logger, LogLevel.ERROR);
-                assert !JPService.testMode(); // fail during unit tests.
+        StreamSupport.stream(pluginList).forEach(new Consumer<P>() {
+            @Override
+            public void accept(P plugin) {
+                try {
+                    plugin.shutdown();
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not shutdown RegistryPlugin[" + plugin + "]!", ex), logger, LogLevel.ERROR);
+                    assert !JPService.testMode(); // fail during unit tests.
+                }
             }
         });
     }

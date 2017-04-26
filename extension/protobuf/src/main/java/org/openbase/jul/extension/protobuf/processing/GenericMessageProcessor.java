@@ -21,8 +21,13 @@ package org.openbase.jul.extension.protobuf.processing;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.InvocationTargetException;
+
+import java8.util.function.Consumer;
+import java8.util.function.Predicate;
+import java8.util.stream.StreamSupport;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.slf4j.Logger;
@@ -56,11 +61,22 @@ public class GenericMessageProcessor<M extends GeneratedMessage> implements Mess
         }
 
         builder.clear();
-        builder.getDescriptorForType().getFields().stream().forEach((fieldDescriptor) -> {
-            input.getAllFields().keySet().stream().filter((inputFieldDescriptor) -> (fieldDescriptor.getType().equals(inputFieldDescriptor.getType())
-                    && fieldDescriptor.getName().equals(inputFieldDescriptor.getName()))).forEach((inputFieldDescriptor) -> {
+        StreamSupport.stream(builder.getDescriptorForType().getFields()).forEach(new Consumer<Descriptors.FieldDescriptor>() {
+            @Override
+            public void accept(Descriptors.FieldDescriptor fieldDescriptor) {
+                StreamSupport.stream(input.getAllFields().keySet()).filter(new Predicate<Descriptors.FieldDescriptor>() {
+                    @Override
+                    public boolean test(Descriptors.FieldDescriptor inputFieldDescriptor) {
+                        return (fieldDescriptor.getType().equals(inputFieldDescriptor.getType())
+                                && fieldDescriptor.getName().equals(inputFieldDescriptor.getName()));
+                    }
+                }).forEach(new Consumer<Descriptors.FieldDescriptor>() {
+                    @Override
+                    public void accept(Descriptors.FieldDescriptor inputFieldDescriptor) {
                         builder.setField(fieldDescriptor, input.getField(inputFieldDescriptor));
-                    });
+                    }
+                });
+            }
         });
         return (M) builder.build();
     }

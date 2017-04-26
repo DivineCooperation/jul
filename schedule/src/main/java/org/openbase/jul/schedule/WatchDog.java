@@ -26,6 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import java8.util.function.Consumer;
+
+import java8.util.stream.StreamSupport;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -59,11 +63,14 @@ public class WatchDog implements Activatable, Shutdownable {
                 @Override
                 public void run() {
                     assert globalWatchDogList != null;
-                    globalWatchDogList.forEach((watchDog) -> {
-                        try {
-                            watchDog.shutdown();
-                        } catch (Exception ex) {
-                            ExceptionPrinter.printHistory("Could not shutdown watchdog!", ex, logger);
+                    StreamSupport.stream(globalWatchDogList).forEach(new Consumer<WatchDog>() {
+                        @Override
+                        public void accept(WatchDog watchDog) {
+                            try {
+                                watchDog.shutdown();
+                            } catch (Exception ex) {
+                                ExceptionPrinter.printHistory("Could not shutdown watchdog!", ex, logger);
+                            }
                         }
                     });
                 }

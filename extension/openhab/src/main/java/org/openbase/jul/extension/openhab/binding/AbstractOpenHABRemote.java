@@ -87,17 +87,20 @@ public abstract class AbstractOpenHABRemote extends RSBRemoteService<OpenhabStat
             openhabCommandListener = RSBFactoryImpl.getInstance().createSynchronizedListener(SCOPE_OPENHAB_COMMAND);
             openhabUpdateListener = RSBFactoryImpl.getInstance().createSynchronizedListener(SCOPE_OPENHAB_UPDATE);
 
-            openhabCommandListener.addHandler((Event event) -> {
-                try {
-                    OpenhabCommand openhabCommand = (OpenhabCommand) event.getData();
-                    if (!openhabCommand.hasItemBindingConfig() || !openhabCommand.getItemBindingConfig().startsWith(itemFilter)) {
-                        return;
+            openhabCommandListener.addHandler(new Handler() {
+                @Override
+                public void internalNotify(Event event) {
+                    try {
+                        OpenhabCommand openhabCommand = (OpenhabCommand) event.getData();
+                        if (!openhabCommand.hasItemBindingConfig() || !openhabCommand.getItemBindingConfig().startsWith(itemFilter)) {
+                            return;
+                        }
+                        AbstractOpenHABRemote.this.internalReceiveCommand(openhabCommand);
+                    } catch (ClassCastException ex) {
+                        ExceptionPrinter.printHistory(new NotSupportedException(event.getData().getClass().getSimpleName(), AbstractOpenHABRemote.this), logger, LogLevel.DEBUG);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not handle openhab command!", ex), logger);
                     }
-                    internalReceiveCommand(openhabCommand);
-                } catch (ClassCastException ex) {
-                    ExceptionPrinter.printHistory(new NotSupportedException(event.getData().getClass().getSimpleName(), this), logger, LogLevel.DEBUG);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not handle openhab command!", ex), logger);
                 }
             }, true);
 

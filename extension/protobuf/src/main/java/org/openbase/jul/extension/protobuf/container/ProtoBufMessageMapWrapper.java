@@ -26,6 +26,9 @@ import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 
@@ -64,8 +67,11 @@ public class ProtoBufMessageMapWrapper<KEY extends Comparable<KEY>, M extends Ge
     @Override
     public List<M> getMessages() throws CouldNotPerformException {
         ArrayList<M> list = new ArrayList<>();
-        values().stream().forEach((identifiableMessage) -> {
-            list.add(identifiableMessage.getMessage());
+        StreamSupport.stream(values()).forEach(new Consumer<IdentifiableMessage<KEY, M, MB>>() {
+            @Override
+            public void accept(IdentifiableMessage<KEY, M, MB> identifiableMessage) {
+                list.add(identifiableMessage.getMessage());
+            }
         });
         return list;
     }

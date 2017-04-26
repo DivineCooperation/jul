@@ -21,10 +21,8 @@ package org.openbase.jul.extension.rsb.com;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -193,11 +191,14 @@ public abstract class RSBSynchronizedParticipant<P extends Participant> implemen
 
                 // deactivate
                 logger.debug("Participant[" + this + "] will be deactivated.");
-                final Future<Void> deactivationFuture = GlobalCachedExecutorService.submit(() -> {
-                    if (participant.isActive()) {
-                        participant.deactivate();
+                final Future<Void> deactivationFuture = GlobalCachedExecutorService.submit(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        if (participant.isActive()) {
+                            participant.deactivate();
+                        }
+                        return null;
                     }
-                    return null;
                 });
 
                 // wait for deactivation and handle error case

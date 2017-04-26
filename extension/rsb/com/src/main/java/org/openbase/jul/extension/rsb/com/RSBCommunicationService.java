@@ -236,29 +236,35 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
             serverWatchDog = new WatchDog(server, "RSBLocalServer[" + internalScope.concat(new rsb.Scope(rsb.Scope.COMPONENT_SEPARATOR).concat(SCOPE_SUFFIX_CONTROL)) + "]");
 
-            this.informerWatchDog.addObserver((final Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data) -> {
-                if (data == WatchDog.ServiceState.RUNNING) {
+            this.informerWatchDog.addObserver(new Observer<WatchDog.ServiceState>() {
+                @Override
+                public void update(Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data) throws Exception {
+                    if (data == WatchDog.ServiceState.RUNNING) {
 
-                    setControllerAvailabilityState(ControllerAvailabilityState.ONLINE);
+                        RSBCommunicationService.this.setControllerAvailabilityState(ControllerAvailabilityState.ONLINE);
 
-                    // Sync data after service start.
-                    initialDataSyncFuture = GlobalCachedExecutorService.submit(() -> {
-                        try {
-                            // skip if shutdown was already initiated
-                            if (informerWatchDog.isServiceDone() || serverWatchDog.isServiceDone()) {
-                                return;
+                        // Sync data after service start.
+                        initialDataSyncFuture = GlobalCachedExecutorService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    // skip if shutdown was already initiated
+                                    if (informerWatchDog.isServiceDone() || serverWatchDog.isServiceDone()) {
+                                        return;
+                                    }
+
+                                    informerWatchDog.waitForServiceActivation();
+                                    serverWatchDog.waitForServiceActivation();
+                                    logger.debug("trigger initial sync");
+                                    RSBCommunicationService.this.notifyChange();
+                                } catch (InterruptedException ex) {
+                                    logger.debug("Initial sync was skipped because of controller shutdown.");
+                                } catch (CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not trigger data sync!", ex), logger, LogLevel.ERROR);
+                                }
                             }
-
-                            informerWatchDog.waitForServiceActivation();
-                            serverWatchDog.waitForServiceActivation();
-                            logger.debug("trigger initial sync");
-                            notifyChange();
-                        } catch (InterruptedException ex) {
-                            logger.debug("Initial sync was skipped because of controller shutdown.");
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not trigger data sync!", ex), logger, LogLevel.ERROR);
-                        }
-                    });
+                        });
+                    }
                 }
             });
 

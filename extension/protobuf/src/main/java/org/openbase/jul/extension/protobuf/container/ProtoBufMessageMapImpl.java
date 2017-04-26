@@ -22,6 +22,8 @@ package org.openbase.jul.extension.protobuf.container;
  * #L%
  */
 
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
@@ -187,8 +189,11 @@ public class ProtoBufMessageMapImpl<KEY extends Comparable<KEY>, M extends Gener
     @Override
     public List<M> getMessages() throws CouldNotPerformException {
         List<M> messageList = new ArrayList<>();
-        values().stream().forEach((messageContainer) -> {
-            messageList.add(messageContainer.getMessage());
+        StreamSupport.stream(values()).forEach(new Consumer<IdentifiableMessage<KEY, M, MB>>() {
+            @Override
+            public void accept(IdentifiableMessage<KEY, M, MB> messageContainer) {
+                messageList.add(messageContainer.getMessage());
+            }
         });
         return messageList;
     }

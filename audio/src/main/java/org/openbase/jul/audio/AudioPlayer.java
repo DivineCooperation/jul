@@ -69,11 +69,14 @@ public class AudioPlayer {
                 play(source);
                 return true;
             }
-            executorService.execute(() -> {
-                try {
-                    play(source);
-                } catch (IOException | UnsupportedAudioFileException | LineUnavailableException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not play clip!", ex), logger, LogLevel.WARN);
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        play(source);
+                    } catch (IOException | UnsupportedAudioFileException | LineUnavailableException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not play clip!", ex), logger, LogLevel.WARN);
+                    }
                 }
             });
         } catch (IOException | UnsupportedAudioFileException | LineUnavailableException | InterruptedException ex) {

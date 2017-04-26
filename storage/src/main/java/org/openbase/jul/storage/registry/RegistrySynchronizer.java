@@ -81,9 +81,12 @@ public class RegistrySynchronizer<KEY, ENTRY extends Configurable<KEY, CONFIG_M>
                 }
             };
 
-            this.remoteRegistryChangeObserver = (Observable<Map<KEY, IdentifiableMessage<KEY, CONFIG_M, CONFIG_MB>>> source, Map<KEY, IdentifiableMessage<KEY, CONFIG_M, CONFIG_MB>> data) -> {
-                logger.debug("Incomming updates...");
-                recurrenceSyncFilter.trigger();
+            this.remoteRegistryChangeObserver = new Observer<Map<KEY, IdentifiableMessage<KEY, CONFIG_M, CONFIG_MB>>>() {
+                @Override
+                public void update(Observable<Map<KEY, IdentifiableMessage<KEY, CONFIG_M, CONFIG_MB>>> source, Map<KEY, IdentifiableMessage<KEY, CONFIG_M, CONFIG_MB>> data) throws Exception {
+                    logger.debug("Incomming updates...");
+                    recurrenceSyncFilter.trigger();
+                }
             };
 
         } catch (Exception ex) {

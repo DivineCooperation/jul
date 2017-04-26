@@ -22,6 +22,8 @@ package org.openbase.jul.storage.registry.plugin;
  * #L%
  */
 
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -53,11 +55,14 @@ public class FileRegistryPluginPool<KEY, ENTRY extends Identifiable<KEY>, P exte
 
     @Override
     public void afterRegister(ENTRY entry, FileSynchronizer fileSynchronizer) throws CouldNotPerformException {
-        pluginList.stream().forEach((plugin) -> {
-            try {
-                plugin.afterRegister(entry, fileSynchronizer);
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about successfully Entry[" + entry + "] registration!", ex), logger, LogLevel.ERROR);
+        StreamSupport.stream(pluginList).forEach(new Consumer<P>() {
+            @Override
+            public void accept(P plugin) {
+                try {
+                    plugin.afterRegister(entry, fileSynchronizer);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about successfully Entry[" + entry + "] registration!", ex), logger, LogLevel.ERROR);
+                }
             }
         });
     }
@@ -77,11 +82,14 @@ public class FileRegistryPluginPool<KEY, ENTRY extends Identifiable<KEY>, P exte
 
     @Override
     public void afterRemove(ENTRY entry, FileSynchronizer fileSynchronizer) throws CouldNotPerformException {
-        pluginList.stream().forEach((plugin) -> {
-            try {
-                plugin.afterRemove(entry, fileSynchronizer);
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about successfully Entry[" + entry + "] removal!", ex), logger, LogLevel.ERROR);
+        StreamSupport.stream(pluginList).forEach(new Consumer<P>() {
+            @Override
+            public void accept(P plugin) {
+                try {
+                    plugin.afterRemove(entry, fileSynchronizer);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about successfully Entry[" + entry + "] removal!", ex), logger, LogLevel.ERROR);
+                }
             }
         });
     }
@@ -101,13 +109,16 @@ public class FileRegistryPluginPool<KEY, ENTRY extends Identifiable<KEY>, P exte
 
     @Override
     public void afterUpdate(ENTRY entry, FileSynchronizer fileSynchronizer) throws CouldNotPerformException {
-         pluginList.stream().forEach((plugin) -> {
-            try {
-                plugin.afterUpdate(entry, fileSynchronizer);
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about successfully Entry[" + entry + "] update!", ex), logger, LogLevel.ERROR);
-            }
-        });
+         StreamSupport.stream(pluginList).forEach(new Consumer<P>() {
+             @Override
+             public void accept(P plugin) {
+                 try {
+                     plugin.afterUpdate(entry, fileSynchronizer);
+                 } catch (Exception ex) {
+                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about successfully Entry[" + entry + "] update!", ex), logger, LogLevel.ERROR);
+                 }
+             }
+         });
     }
 
     @Override

@@ -28,6 +28,9 @@ import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.provider.LabelProvider;
@@ -108,8 +111,11 @@ public class ProtoBufFieldProcessor {
 
     public static void initRequiredFieldsWithDefault(final Message.Builder builder) {
         List<String> missingFieldList = builder.findInitializationErrors();
-        missingFieldList.stream().forEach((initError) -> {
-            initFieldWithDefault(builder, initError);
+        StreamSupport.stream(missingFieldList).forEach(new Consumer<String>() {
+            @Override
+            public void accept(String initError) {
+                initFieldWithDefault(builder, initError);
+            }
         });
     }
 
@@ -143,8 +149,11 @@ public class ProtoBufFieldProcessor {
     }
 
     public static void clearRequiredFields(final Message.Builder builder) {
-        builder.findInitializationErrors().stream().forEach((initError) -> {
-            clearRequiredField(builder, initError);
+        StreamSupport.stream(builder.findInitializationErrors()).forEach(new Consumer<String>() {
+            @Override
+            public void accept(String initError) {
+                clearRequiredField(builder, initError);
+            }
         });
     }
 

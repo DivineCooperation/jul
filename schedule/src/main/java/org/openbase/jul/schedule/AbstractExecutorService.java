@@ -33,6 +33,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.JPDebugMode;
@@ -99,24 +102,27 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
     }
 
     private Runnable initReportService() {
-        final Runnable reportService = () -> {
-            try {
-                final boolean overload;
-                if (executorService.getActiveCount() == executorService.getMaximumPoolSize()) {
-                    overload = true;
-                    logger.warn("Further tasks will be rejected because executor service overload is detected!");
-                } else if (executorService.getActiveCount() >= ((double) executorService.getMaximumPoolSize() * DEFAULT_WARNING_RATIO)) {
-                    overload = true;
-                    logger.warn("High Executor service load detected! This can cause system instability issues!");
-                } else {
-                    overload = false;
-                }
+        final Runnable reportService = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final boolean overload;
+                    if (executorService.getActiveCount() == executorService.getMaximumPoolSize()) {
+                        overload = true;
+                        logger.warn("Further tasks will be rejected because executor service overload is detected!");
+                    } else if (executorService.getActiveCount() >= ((double) executorService.getMaximumPoolSize() * DEFAULT_WARNING_RATIO)) {
+                        overload = true;
+                        logger.warn("High Executor service load detected! This can cause system instability issues!");
+                    } else {
+                        overload = false;
+                    }
 
-                if (overload || JPService.getProperty(JPDebugMode.class).getValue()) {
-                    logger.info("Executor load " + getExecutorLoad() + "% [" + executorService.getActiveCount() + " of " + executorService.getMaximumPoolSize() + " threads processing " + (executorService.getTaskCount() - executorService.getCompletedTaskCount()) + " tasks] in total " + executorService.getCompletedTaskCount() + " are completed.");
+                    if (overload || JPService.getProperty(JPDebugMode.class).getValue()) {
+                        logger.info("Executor load " + AbstractExecutorService.this.getExecutorLoad() + "% [" + executorService.getActiveCount() + " of " + executorService.getMaximumPoolSize() + " threads processing " + (executorService.getTaskCount() - executorService.getCompletedTaskCount()) + " tasks] in total " + executorService.getCompletedTaskCount() + " are completed.");
+                    }
+                } catch (JPNotAvailableException ex) {
+                    logger.warn("Could not detect debug mode!", ex);
                 }
-            } catch (JPNotAvailableException ex) {
-                logger.warn("Could not detect debug mode!", ex);
             }
         };
         final ScheduledExecutorService scheduledExecutorService;
@@ -232,13 +238,16 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
      * @throws CouldNotPerformException thrown by the errorProcessor
      */
     public static Future applyErrorHandling(final Future future, final Processable<Exception, Void> errorProcessor, final long timeout, final TimeUnit timeUnit, final ExecutorService executorService) throws CouldNotPerformException {
-        return executorService.submit(() -> {
-            try {
-                future.get(timeout, timeUnit);
-            } catch (ExecutionException | InterruptedException | TimeoutException ex) {
-                errorProcessor.process(ex);
+        return executorService.submit(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                try {
+                    future.get(timeout, timeUnit);
+                } catch (ExecutionException | InterruptedException | TimeoutException ex) {
+                    errorProcessor.process(ex);
+                }
+                return null;
             }
-            return null;
         });
     }
 
@@ -273,11 +282,21 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
     }
 
     public static <I> Future<Void> allOf(final ExecutorService executorService, final Collection<I> inputList, final Processable<I, Future<Void>> taskProcessor) {
-        return allOf(executorService, inputList, (Collection<Future<Void>> input) -> null, taskProcessor);
+        return allOf(executorService, inputList, new Processable<Collection<Future<Void>>, Void>() {
+            @Override
+            public Void process(Collection<Future<Void>> input) throws CouldNotPerformException, InterruptedException {
+                return null;
+            }
+        }, taskProcessor);
     }
 
     public static <I> Future<Void> allOf(final Collection<I> inputList, final Processable<I, Future<Void>> taskProcessor) throws CouldNotPerformException {
-        return allOf(getInstance().getExecutorService(), inputList, (Collection<Future<Void>> input) -> null, taskProcessor);
+        return allOf(getInstance().getExecutorService(), inputList, new Processable<Collection<Future<Void>>, Void>() {
+            @Override
+            public Void process(Collection<Future<Void>> input) throws CouldNotPerformException, InterruptedException {
+                return null;
+            }
+        }, taskProcessor);
     }
 
     public static <I, O, R> Future<R> allOf(final Collection<I> inputList, final Processable<Collection<Future<O>>, R> resultProcessor, final Processable<I, Future<O>> taskProcessor) throws CouldNotPerformException, InterruptedException {
@@ -298,11 +317,21 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
         // Add result future to future list to make sure that the result is available if requested.
         futureList.add(resultFuture);
 
-        return allOf(getInstance().getExecutorService(), () -> resultFuture.get(), futureList);
+        return allOf(getInstance().getExecutorService(), new Callable<R>() {
+            @Override
+            public R call() throws Exception {
+                return resultFuture.get();
+            }
+        }, futureList);
     }
 
     public static Future<Void> allOf(final Collection<Future> futureCollection) {
-        return allOf(getInstance().getExecutorService(), () -> null, futureCollection);
+        return allOf(getInstance().getExecutorService(), new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                return null;
+            }
+        }, futureCollection);
     }
 
     /**
@@ -337,7 +366,12 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
     }
 
     public static <R> Future<R> allOf(final ExecutorService executorService, R returnValue, final Collection<Future> futureCollection) {
-        return allOf(executorService, () -> returnValue, futureCollection);
+        return allOf(executorService, new Callable<R>() {
+            @Override
+            public R call() throws Exception {
+                return returnValue;
+            }
+        }, futureCollection);
     }
 
     /**
@@ -374,8 +408,11 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
                         }
                     } catch (InterruptedException ex) {
                         // cancel all pending actions.
-                        futureCollection.stream().forEach((future) -> {
-                            future.cancel(true);
+                        StreamSupport.stream(futureCollection).forEach(new Consumer<Future<O>>() {
+                            @Override
+                            public void accept(Future<O> future) {
+                                future.cancel(true);
+                            }
                         });
                         throw ex;
                     }
@@ -427,8 +464,11 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
                         }
                     } catch (InterruptedException ex) {
                         // cancel all pending actions.
-                        futureCollection.stream().forEach((future) -> {
-                            future.cancel(true);
+                        StreamSupport.stream(futureCollection).forEach(new Consumer<Future>() {
+                            @Override
+                            public void accept(Future future) {
+                                future.cancel(true);
+                            }
                         });
                         throw ex;
                     }
@@ -489,8 +529,11 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
                         }
                     } catch (InterruptedException ex) {
                         // cancel all pending actions.
-                        futureCollection.stream().forEach((future) -> {
-                            future.cancel(true);
+                        StreamSupport.stream(futureCollection).forEach(new Consumer<Future<O>>() {
+                            @Override
+                            public void accept(Future<O> future) {
+                                future.cancel(true);
+                            }
                         });
                         throw ex;
                     }

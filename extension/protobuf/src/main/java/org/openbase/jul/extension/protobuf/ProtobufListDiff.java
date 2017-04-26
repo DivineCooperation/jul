@@ -23,6 +23,8 @@ package org.openbase.jul.extension.protobuf;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import java8.util.function.Consumer;
+import java8.util.stream.StreamSupport;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -79,18 +81,21 @@ public class ProtobufListDiff<KEY, M extends GeneratedMessage, MB extends M.Buil
 
         final IdentifiableMessageMap<KEY, M, MB> modifieredListCopy = new IdentifiableMessageMap<>(modifieredMap);
 
-        originalMap.keySet().stream().forEach((id) -> {
-            try {
-                if (modifieredMap.containsKey(id)) {
-                    if (!originalMap.get(id).getMessage().equals(modifieredMap.get(id).getMessage())) {
-                        updatedMessages.put(modifieredMap.get(id));
+        StreamSupport.stream(originalMap.keySet()).forEach(new Consumer<KEY>() {
+            @Override
+            public void accept(KEY id) {
+                try {
+                    if (modifieredMap.containsKey(id)) {
+                        if (!originalMap.get(id).getMessage().equals(modifieredMap.get(id).getMessage())) {
+                            updatedMessages.put(modifieredMap.get(id));
+                        }
+                        modifieredListCopy.remove(id);
+                    } else {
+                        removedMessages.put(originalMap.get(id));
                     }
-                    modifieredListCopy.remove(id);
-                } else {
-                    removedMessages.put(originalMap.get(id));
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Ignoring invalid Message[" + id + "]", ex), logger, LogLevel.ERROR);
                 }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Ignoring invalid Message[" + id + "]", ex), logger, LogLevel.ERROR);
             }
         });
         // add all messages which are not included in original list.

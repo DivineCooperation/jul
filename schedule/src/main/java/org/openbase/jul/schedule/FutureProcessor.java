@@ -43,14 +43,17 @@ public class FutureProcessor {
      */
     public static <T> CompletableFuture<T> toCompletableFuture(final Callable<T> callable) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        CompletableFuture.runAsync(() -> {
-            try {
-                future.complete(callable.call());
-            } catch (InterruptedException e) {
-                future.completeExceptionally(e);
-                Thread.currentThread().interrupt();
-            } catch (Exception e) {
-                future.completeExceptionally(e);
+        CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    future.complete(callable.call());
+                } catch (InterruptedException e) {
+                    future.completeExceptionally(e);
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
             }
         });
         return future;

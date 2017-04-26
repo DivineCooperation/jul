@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java8.util.function.Consumer;
+
+import java8.util.stream.StreamSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.openbase.jps.core.JPService;
@@ -223,15 +226,18 @@ public class DBVersionControl {
 
     private Map<String, Map<File, DatabaseEntryDescriptor>> loadGlobalDbSnapshots() {
         Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshotMap = new HashMap<>();
-        globalDatabaseDirectories.stream().forEach((globalDatabaseDirectory) -> {
-            try {
-                if (globalDatabaseDirectory.canWrite()) {
-                    globalDbSnapshotMap.put(globalDatabaseDirectory.getName(), loadDbSnapshotAsDBEntryDescriptors(globalDatabaseDirectory));
-                } else {
-                    logger.warn("Skip loading of global Database[" + globalDatabaseDirectory.getAbsolutePath() + "] because directory is write protected!");
+        StreamSupport.stream(globalDatabaseDirectories).forEach(new java8.util.function.Consumer<File>() {
+            @Override
+            public void accept(File globalDatabaseDirectory) {
+                try {
+                    if (globalDatabaseDirectory.canWrite()) {
+                        globalDbSnapshotMap.put(globalDatabaseDirectory.getName(), DBVersionControl.this.loadDbSnapshotAsDBEntryDescriptors(globalDatabaseDirectory));
+                    } else {
+                        logger.warn("Skip loading of global Database[" + globalDatabaseDirectory.getAbsolutePath() + "] because directory is write protected!");
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not load db entries out of " + globalDatabaseDirectory.getAbsolutePath(), ex, logger);
                 }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not load db entries out of " + globalDatabaseDirectory.getAbsolutePath(), ex, logger);
             }
         });
         return globalDbSnapshotMap;
@@ -580,7 +586,9 @@ public class DBVersionControl {
                 Set<String> handlerList = new HashSet<>();
                 JsonArray consistencyHandlerJsonArray = versionJsonObject.getAsJsonArray(APPLIED_VERSION_CONSISTENCY_HANDLER_FIELD);
                 if (consistencyHandlerJsonArray != null) {
-                    consistencyHandlerJsonArray.forEach(entry -> handlerList.add(entry.getAsString()));
+                    for (JsonElement entry : consistencyHandlerJsonArray) {
+                        handlerList.add(entry.getAsString());
+                    }
                 }
                 return handlerList;
             } catch (IOException | JsonSyntaxException ex) {

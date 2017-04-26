@@ -256,12 +256,15 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
         try {
             this.remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_CONTROL), participantConfig);
             this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer[" + scope.concat(RSBCommunicationService.SCOPE_SUFFIX_CONTROL) + "]");
-            this.listenerWatchDog.addObserver((final Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data1) -> {
-                logger.debug("listener state update: " + data1.name());
-                // Sync data after service start.
-                if (data1 == WatchDog.ServiceState.RUNNING) {
-                    remoteServerWatchDog.waitForServiceActivation();
-                    requestData();
+            this.listenerWatchDog.addObserver(new Observer<WatchDog.ServiceState>() {
+                @Override
+                public void update(Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data1) throws Exception {
+                    logger.debug("listener state update: " + data1.name());
+                    // Sync data after service start.
+                    if (data1 == WatchDog.ServiceState.RUNNING) {
+                        remoteServerWatchDog.waitForServiceActivation();
+                        RSBRemoteService.this.requestData();
+                    }
                 }
             });
         } catch (RuntimeException | InstantiationException ex) {
@@ -1217,24 +1220,27 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
      * @return the connection delay in milliseconds.
      */
     public Future<Long> ping() {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                Long requestTime = (Long) callMethodAsync("ping", System.currentTimeMillis()).get(PING_TIMEOUT, TimeUnit.MILLISECONDS);
-                lastPingReceived = System.currentTimeMillis();
-                connectionPing = lastPingReceived - requestTime;
-                return connectionPing;
-            } catch (java.util.concurrent.TimeoutException ex) {
-                synchronized (connectionMonitor) {
-                    if (connectionState == CONNECTED) {
-                        logger.warn("Remote connection to Controller[" + ScopeTransformer.transform(getScope()) + "] lost!");
+        return GlobalCachedExecutorService.submit(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                try {
+                    Long requestTime = (Long) RSBRemoteService.this.callMethodAsync("ping", System.currentTimeMillis()).get(PING_TIMEOUT, TimeUnit.MILLISECONDS);
+                    lastPingReceived = System.currentTimeMillis();
+                    connectionPing = lastPingReceived - requestTime;
+                    return connectionPing;
+                } catch (java.util.concurrent.TimeoutException ex) {
+                    synchronized (connectionMonitor) {
+                        if (connectionState == CONNECTED) {
+                            logger.warn("Remote connection to Controller[" + ScopeTransformer.transform(RSBRemoteService.this.getScope()) + "] lost!");
 
-                        // init reconnection
-                        setConnectionState(CONNECTING);
+                            // init reconnection
+                            RSBRemoteService.this.setConnectionState(CONNECTING);
+                        }
                     }
+                    throw ex;
+                } catch (CouldNotPerformException | ExecutionException ex) {
+                    throw new CouldNotPerformException("Could not compute ping!", ex);
                 }
-                throw ex;
-            } catch (CouldNotPerformException | ExecutionException ex) {
-                throw new CouldNotPerformException("Could not compute ping!", ex);
             }
         });
     }

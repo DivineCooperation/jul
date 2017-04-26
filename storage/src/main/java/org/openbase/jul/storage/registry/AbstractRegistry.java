@@ -21,16 +21,12 @@ package org.openbase.jul.storage.registry;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import java8.util.function.Consumer;
+import java8.util.function.Predicate;
+import java8.util.stream.StreamSupport;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
@@ -306,13 +302,16 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
                     throw new NotAvailableException("Entry", key.toString(), new InvalidStateException(this + " is empty!"));
                 }
 
-                TreeMap<KEY, ENTRY> sortedMap = new TreeMap<>((KEY o1, KEY o2) -> {
-                    if (o1 instanceof String && o2 instanceof String) {
-                        return ((String) o1).toLowerCase().compareTo(((String) o2).toLowerCase());
-                    } else if (o1 instanceof Comparable && o2 instanceof Comparable) {
-                        return ((Comparable) o1).compareTo(((Comparable) o2));
+                TreeMap<KEY, ENTRY> sortedMap = new TreeMap<>(new Comparator<KEY>() {
+                    @Override
+                    public int compare(KEY o1, KEY o2) {
+                        if (o1 instanceof String && o2 instanceof String) {
+                            return ((String) o1).toLowerCase().compareTo(((String) o2).toLowerCase());
+                        } else if (o1 instanceof Comparable && o2 instanceof Comparable) {
+                            return ((Comparable) o1).compareTo(((Comparable) o2));
+                        }
+                        return (o1).toString().compareTo(o2.toString());
                     }
-                    return (o1).toString().compareTo(o2.toString());
                 });
                 sortedMap.putAll(entryMap);
 
@@ -507,7 +506,12 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
      * @return The method returns should return false if at least one depending registry is not consistent!
      */
     protected boolean isDependingOnConsistentRegistries() {
-        return new ArrayList<>(dependingRegistryMap.keySet()).stream().noneMatch((registry) -> (!registry.isConsistent()));
+        return StreamSupport.stream(new ArrayList<>(dependingRegistryMap.keySet())).noneMatch(new Predicate<Registry>() {
+            @Override
+            public boolean test(Registry registry) {
+                return (!registry.isConsistent());
+            }
+        });
     }
 
     /**
@@ -557,8 +561,11 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
         try {
             List<Registry> dependingRegistryList = new ArrayList<>(dependingRegistryMap.keySet());
             Collections.reverse(dependingRegistryList);
-            dependingRegistryList.stream().forEach((registry) -> {
-                dependingRegistryMap.remove(registry).shutdown();
+            StreamSupport.stream(dependingRegistryList).forEach(new Consumer<Registry>() {
+                @Override
+                public void accept(Registry registry) {
+                    dependingRegistryMap.remove(registry).shutdown();
+                }
             });
         } finally {
             registryLock.writeLock().unlock();
@@ -844,8 +851,11 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
                 super.shutdown();
                 removeAllDependencies();
                 pluginPool.shutdown();
-                consistencyHandlerList.stream().forEach((consistencyHandler) -> {
-                    consistencyHandler.shutdown();
+                StreamSupport.stream(consistencyHandlerList).forEach(new Consumer<ConsistencyHandler<KEY, ENTRY, MAP, R>>() {
+                    @Override
+                    public void accept(ConsistencyHandler<KEY, ENTRY, MAP, R> consistencyHandler) {
+                        consistencyHandler.shutdown();
+                    }
                 });
                 clear();
             } finally {
@@ -1022,8 +1032,11 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
             try {
                 // if not successfull release all already acquire locks.
                 if (!success) {
-                    lockedRegistries.stream().forEach((registry) -> {
-                        registry.unlockRegistry();
+                    StreamSupport.stream(lockedRegistries).forEach(new Consumer<Registry>() {
+                        @Override
+                        public void accept(Registry registry) {
+                            registry.unlockRegistry();
+                        }
                     });
                 }
             } catch (Exception ex) {
@@ -1038,8 +1051,11 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
     }
 
     private synchronized void unlockDependingRegistries() {
-        new ArrayList<>(dependingRegistryMap.keySet()).stream().forEach((registry) -> {
-            registry.unlockRegistry();
+        StreamSupport.stream(new ArrayList<>(dependingRegistryMap.keySet())).forEach(new Consumer<Registry>() {
+            @Override
+            public void accept(Registry registry) {
+                registry.unlockRegistry();
+            }
         });
     }
 
