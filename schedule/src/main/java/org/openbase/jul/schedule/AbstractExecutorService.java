@@ -312,7 +312,7 @@ public abstract class AbstractExecutorService<ES extends ThreadPoolExecutor> imp
     }
 
     public static <R> Future<R> allOfInclusiveResultFuture(final Future<R> resultFuture, final Future... futures) {
-        final List<Future> futureList = Arrays.asList(futures);
+        final List<Future> futureList = new ArrayList<>(Arrays.asList(futures));
 
         // Add result future to future list to make sure that the result is available if requested.
         futureList.add(resultFuture);

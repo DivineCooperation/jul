@@ -21,6 +21,7 @@ package org.openbase.jul.extension.protobuf;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -110,6 +111,11 @@ public class MessageObservableTest {
 
             @Override
             public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+            }
+
+            @Override
+            public CompletableFuture<ColorableLightData> getDataFuture() {
+                return CompletableFuture.completedFuture(null);
             }
         });
 

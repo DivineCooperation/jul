@@ -23,6 +23,7 @@ package org.openbase.jul.storage.registry;
  */
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -202,6 +203,11 @@ public class MockRegistrySandbox<KEY, ENTRY extends Identifiable<KEY>, MAP exten
     @Override
     public void unlockRegistry() {
         // MockRegistrySandbox is not unlockable
+    }
+
+    @Override
+    public Future<Map<KEY, ENTRY>> getValueFuture() {
+        throw new UnsupportedOperationException("Not supported for mock sandbox.");
     }
 
     // BEGIN DEFAULT INTERFACE METHODS

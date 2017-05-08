@@ -24,6 +24,7 @@ package org.openbase.jul.extension.protobuf;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -62,6 +63,11 @@ public class MessageObservable<M extends Message> extends AbstractObservable<M> 
         return dataProvider.isDataAvailable();
     }
 
+    @Override
+    public Future<M> getValueFuture() {
+        return dataProvider.getDataFuture();
+    }
+    
     /**
      * Compute a timestamp invariant hash code.
      *

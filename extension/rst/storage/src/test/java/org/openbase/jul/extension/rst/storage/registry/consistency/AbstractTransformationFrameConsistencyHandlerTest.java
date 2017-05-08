@@ -23,6 +23,7 @@ package org.openbase.jul.extension.rst.storage.registry.consistency;
  */
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -364,6 +365,9 @@ public class AbstractTransformationFrameConsistencyHandlerTest {
                     }
                 }
 
+                public Future<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> getValueFuture() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
             });
         }
 

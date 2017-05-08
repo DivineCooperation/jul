@@ -21,6 +21,7 @@ package org.openbase.jul.pattern;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -81,11 +82,17 @@ public interface Observable<T> extends Shutdownable {
     /**
      * Method returns the latest observable value.
      *
-     * @return
+     * @return the latest value of the observable. 
      * @throws NotAvailableException
      */
     public T getValue() throws NotAvailableException;
 
+    /**
+     * Method returns a Future object which represents the value availability.
+     * @return a future object providing the value.
+     */
+    public Future<T> getValueFuture();
+    
     /**
      * Checks if a value was ever notified.
      *

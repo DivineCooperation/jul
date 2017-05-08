@@ -1307,14 +1307,17 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
     ///////////////
     // START DEFAULT INTERFACE METHODS
 
-    public CompletableFuture<M> getDataFuture() throws CouldNotPerformException {
+    public CompletableFuture<M> getDataFuture() {
         try {
             if (!isDataAvailable()) {
                 return requestData();
             }
             return CompletableFuture.completedFuture(getData());
+
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("data", ex);
+            CompletableFuture future = new CompletableFuture();
+            future.completeExceptionally(ex);
+            return future;
         }
     }
     // END DEFAULT INTERACE METHODS

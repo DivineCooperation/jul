@@ -21,6 +21,7 @@ package org.openbase.jul.pattern;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,12 +39,14 @@ public class ObservableImpl<T> extends AbstractObservable<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservableImpl.class);
 
     private T value;
+    private CompletableFuture<T> valueFuture;
 
     /**
      * {@inheritDoc}
      */
     public ObservableImpl() {
         super();
+        this.valueFuture = new CompletableFuture<>();
     }
 
     /**
@@ -54,6 +57,7 @@ public class ObservableImpl<T> extends AbstractObservable<T> {
      */
     public ObservableImpl(final Object source) {
         super(source);
+        this.valueFuture = new CompletableFuture<>();
     }
 
     /**
@@ -64,6 +68,7 @@ public class ObservableImpl<T> extends AbstractObservable<T> {
      */
     public ObservableImpl(final boolean unchangedValueFilter) {
         super(unchangedValueFilter);
+        this.valueFuture = new CompletableFuture<>();
     }
 
     /**
@@ -75,6 +80,7 @@ public class ObservableImpl<T> extends AbstractObservable<T> {
      */
     public ObservableImpl(final boolean unchangedValueFilter, final Object source) {
         super(unchangedValueFilter, source);
+        this.valueFuture = new CompletableFuture<>();
     }
 
     /**
@@ -119,6 +125,16 @@ public class ObservableImpl<T> extends AbstractObservable<T> {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public CompletableFuture<T> getValueFuture() {
+        return valueFuture;
+    }
+
+    /**
      * {@inheritDoc }
      *
      * @return {@inheritDoc }
@@ -136,5 +152,6 @@ public class ObservableImpl<T> extends AbstractObservable<T> {
     @Override
     protected void applyValueUpdate(final T value) {
         this.value = value;
+        this.valueFuture.complete(value);
     }
 }

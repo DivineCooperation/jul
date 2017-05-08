@@ -22,6 +22,7 @@ package org.openbase.jul.pattern.provider;
  * #L%
  */
 
+import java8.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -57,6 +58,14 @@ public interface DataProvider<D> {
      */
     public D getData() throws NotAvailableException;
 
+    
+    /**
+     * Returns a future of the data object. The future can be used to wait for the data object.
+     *
+     * @return a future object delivering the data if available.
+     */
+    public CompletableFuture<D> getDataFuture();
+    
     /**
      * This method allows the registration of data observers to get informed about data updates.
      *
