@@ -42,15 +42,6 @@ public class BatteryStateTransformer {
     public static BatteryState transform(final Double value) {
         BatteryState.Builder state = BatteryState.newBuilder();
         state.setLevel(value);
-        if (value > 15) {
-            state.setValue(BatteryState.State.OK);
-        } else if (value > 3) {
-            state.setValue(BatteryState.State.CRITICAL);
-        } else if (value >= 0) {
-            state.setValue(BatteryState.State.INSUFFICIENT);
-        } else {
-            state.setValue(BatteryState.State.UNKNOWN);
-        }
         return state.build();
     }
 
