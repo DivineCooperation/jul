@@ -30,6 +30,7 @@
 
     <modules>
         <module>container</module>
+        <module>transform</module>
         <module>processing</module>
         <module>storage</module>
         <module>util</module>
