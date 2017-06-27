@@ -7,14 +7,14 @@ branches:
 
 jdk:
   - oraclejdk8
-  
+
 install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -U -V -q
 
 before_install:
   - git clone -b feature-marshmallow-support --single-branch https://github.com/openbase/jps.git
   - cd jps
-  - mvn clean install -q -DskipTests
+  - ./install.sh
   - cd ..
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
@@ -22,7 +22,7 @@ before_install:
 notifications:
     slack: openbase-org:vGz7LO4CvGoGMneYkEm3ON7E
     on_failure: change
-    on_success: change	
+    on_success: change
 
 deploy:
   - provider: script
