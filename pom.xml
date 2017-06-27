@@ -207,7 +207,7 @@
         <dependency.rsb.version>[0.15,0.16-SNAPSHOT)</dependency.rsb.version>
         
         <!--<dependency.rct.version>[1.0,1.1-SNAPSHOT)</dependency.rct.version>-->
-        <dependency.rct.version>1.1-SNAPSHOT</dependency.rct.version>
+        <dependency.rct.version>1.0.6</dependency.rct.version>
     </properties>   
     
     <repositories>
