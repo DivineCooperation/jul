@@ -22,7 +22,6 @@ package org.openbase.jul.extension.rst.transform;
  * #L%
  */
 import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.TypeNotSupportedException;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
 
@@ -44,78 +43,83 @@ public class HSBColorToRGBColorTransformer {
             int cmin = (r < g) ? r : g;
             if (b < cmin) cmin = b;
 
-            brightness = ((float) cmax) / 255.0f;
+            brightness = ((double) cmax) / 255.0d;
             if (cmax != 0)
-                saturation = ((float) (cmax - cmin)) / ((float) cmax);
+                saturation = ((double) (cmax - cmin)) / ((double) cmax);
             else
                 saturation = 0;
             if (saturation == 0)
                 hue = 0;
             else {
-                float redc = ((float) (cmax - r)) / ((float) (cmax - cmin));
-                float greenc = ((float) (cmax - g)) / ((float) (cmax - cmin));
-                float bluec = ((float) (cmax - b)) / ((float) (cmax - cmin));
+                double redc = ((double) (cmax - r)) / ((double) (cmax - cmin));
+                double greenc = ((double) (cmax - g)) / ((double) (cmax - cmin));
+                double bluec = ((double) (cmax - b)) / ((double) (cmax - cmin));
                 if (r == cmax)
                     hue = bluec - greenc;
                 else if (g == cmax)
-                    hue = 2.0f + redc - bluec;
+                    hue = 2.0d + redc - bluec;
                 else
-                    hue = 4.0f + greenc - redc;
-                hue = hue / 6.0f;
+                    hue = 4.0d + greenc - redc;
+                hue = hue / 6.0d;
                 if (hue < 0)
-                    hue = hue + 1.0f;
+                    hue = hue + 1.0d;
             }
+
+            hue *= 360.0d;
+            saturation *= 100.0d;
+            brightness *= 100.0d;
+
             return HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build();
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + RGBColor.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
         }
     }
 
-    public static RGBColor transform(HSBColor hsbColor) throws TypeNotSupportedException, CouldNotTransformException {
+    public static RGBColor transform(HSBColor hsbColor) throws CouldNotTransformException {
         try {
             int r = 0, g = 0, b = 0;
-            double hue = hsbColor.getHue();
-            double saturation = hsbColor.getSaturation();
-            double brightness = hsbColor.getBrightness();
+            double hue = hsbColor.getHue()/360.0d;
+            double saturation = hsbColor.getSaturation()/100.0d;
+            double brightness = hsbColor.getBrightness()/100.0d;
 
             if (saturation == 0) {
-                r = g = b = (int) (brightness * 255.0f + 0.5f);
+                r = g = b = (int) (brightness * 255.0d + 0.5d);
             } else {
-                double h = (hue - (float) Math.floor(hue)) * 6.0f;
-                double f = h - (float) java.lang.Math.floor(h);
-                double p = brightness * (1.0f - saturation);
-                double q = brightness * (1.0f - saturation * f);
-                double t = brightness * (1.0f - (saturation * (1.0f - f)));
+                double h = (hue - Math.floor(hue)) * 6.0d;
+                double f = h - Math.floor(h);
+                double p = brightness * (1.0d - saturation);
+                double q = brightness * (1.0d - saturation * f);
+                double t = brightness * (1.0d - (saturation * (1.0d - f)));
                 switch ((int) h) {
                     case 0:
-                        r = (int) (brightness * 255.0f + 0.5f);
-                        g = (int) (t * 255.0f + 0.5f);
-                        b = (int) (p * 255.0f + 0.5f);
+                        r = (int) (brightness * 255.0d + 0.5d);
+                        g = (int) (t * 255.0d + 0.5d);
+                        b = (int) (p * 255.0d + 0.5d);
                         break;
                     case 1:
-                        r = (int) (q * 255.0f + 0.5f);
-                        g = (int) (brightness * 255.0f + 0.5f);
-                        b = (int) (p * 255.0f + 0.5f);
+                        r = (int) (q * 255.0d + 0.5d);
+                        g = (int) (brightness * 255.0d + 0.5d);
+                        b = (int) (p * 255.0d + 0.5d);
                         break;
                     case 2:
-                        r = (int) (p * 255.0f + 0.5f);
-                        g = (int) (brightness * 255.0f + 0.5f);
-                        b = (int) (t * 255.0f + 0.5f);
+                        r = (int) (p * 255.0d + 0.5d);
+                        g = (int) (brightness * 255.0d + 0.5d);
+                        b = (int) (t * 255.0d + 0.5d);
                         break;
                     case 3:
-                        r = (int) (p * 255.0f + 0.5f);
-                        g = (int) (q * 255.0f + 0.5f);
-                        b = (int) (brightness * 255.0f + 0.5f);
+                        r = (int) (p * 255.0d + 0.5d);
+                        g = (int) (q * 255.0d + 0.5d);
+                        b = (int) (brightness * 255.0d + 0.5d);
                         break;
                     case 4:
-                        r = (int) (t * 255.0f + 0.5f);
-                        g = (int) (p * 255.0f + 0.5f);
-                        b = (int) (brightness * 255.0f + 0.5f);
+                        r = (int) (t * 255.0d + 0.5d);
+                        g = (int) (p * 255.0d + 0.5d);
+                        b = (int) (brightness * 255.0d + 0.5d);
                         break;
                     case 5:
-                        r = (int) (brightness * 255.0f + 0.5f);
-                        g = (int) (p * 255.0f + 0.5f);
-                        b = (int) (q * 255.0f + 0.5f);
+                        r = (int) (brightness * 255.0d + 0.5d);
+                        g = (int) (p * 255.0d + 0.5d);
+                        b = (int) (q * 255.0d + 0.5d);
                         break;
                 }
             }
