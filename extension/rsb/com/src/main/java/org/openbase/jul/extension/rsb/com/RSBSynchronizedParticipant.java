@@ -195,6 +195,7 @@ public abstract class RSBSynchronizedParticipant<P extends Participant> implemen
                 logger.debug("Participant[" + this + "] will be deactivated.");
                 final Future<Void> deactivationFuture = GlobalCachedExecutorService.submit(() -> {
                     if (participant.isActive()) {
+                        System.out.println("participant shutdown thread name: "+Thread.currentThread().getName());
                         participant.deactivate();
                     }
                     return null;

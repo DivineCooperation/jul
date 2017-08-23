@@ -306,6 +306,7 @@ public class WatchDog implements Activatable, Shutdownable {
                 try {
                     try {
                         logger.debug("Minder deactivation initiated of Service[" + serviceName + "]...");
+                        System.out.println("watchdog shutdown thread name: "+Thread.currentThread().getName());
                         service.deactivate();
                     } catch (IllegalStateException | CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not deactivate Service[" + serviceName + "]!", ex), logger);
