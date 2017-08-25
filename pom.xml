@@ -205,9 +205,7 @@
         <dependency.rst.experimental.artifact>rst-experimental</dependency.rst.experimental.artifact>
         <dependency.rst.experimental.version>[0.15,0.16-SNAPSHOT)</dependency.rst.experimental.version>
         <dependency.rsb.version>[0.15,0.16-SNAPSHOT)</dependency.rsb.version>
-        
-        <!--<dependency.rct.version>[1.0,1.1-SNAPSHOT)</dependency.rct.version>-->
-        <dependency.rct.version>1.0.7</dependency.rct.version>
+        <dependency.rct.version>[1.1,1.2-SNAPSHOT)</dependency.rct.version>
     </properties>   
     
     <repositories>
@@ -246,12 +244,12 @@
         <dependency>
             <groupId>net.sourceforge.streamsupport</groupId>
             <artifactId>streamsupport</artifactId>
-            <version>1.5.4</version>
+            <version>1.5.6</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.streamsupport</groupId>
             <artifactId>streamsupport-cfuture</artifactId>
-            <version>1.5.4</version>
+            <version>1.5.6</version>
         </dependency>
     </dependencies>
 
