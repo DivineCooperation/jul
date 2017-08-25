@@ -48,6 +48,7 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.exception.printer.LogLevelFilter;
 import org.openbase.jul.exception.printer.Printer;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Shutdownable;
@@ -834,6 +835,7 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
                             } catch (JPNotAvailableException exx) {
                                 ExceptionPrinter.printHistory(new CouldNotPerformException("JPVerbose property could not be loaded!", exx), logger, LogLevel.WARN);
                             }
+                            pluginPool.afterConsistencyModification((ENTRY) ex.getEntry());
                             modificationCounter++;
                             continue;
                         } catch (Throwable ex) {
@@ -1013,7 +1015,11 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
      * @param message the info message to print as string.
      */
     protected void log(final String message) {
-        Printer.print(message, Printer.getFilteredLogLevel(LogLevel.INFO, isSandbox()), logger);
+        try {
+            Printer.print(message, LogLevelFilter.getFilteredLogLevel(LogLevel.INFO, isSandbox()), logger);
+        } catch (final Throwable ex) {
+            System.out.println("fallback message: " + message);
+        }
     }
 
     /**
@@ -1025,7 +1031,7 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
      * @param throwable the cause of the message.
      */
     protected void log(final String message, final LogLevel logLevel, final Throwable throwable) {
-        Printer.print(message, throwable, Printer.getFilteredLogLevel(logLevel, isSandbox()), logger);
+        Printer.print(message, throwable, LogLevelFilter.getFilteredLogLevel(logLevel, isSandbox()), logger);
     }
 
     /**
@@ -1036,7 +1042,7 @@ public class AbstractRegistry<KEY, ENTRY extends Identifiable<KEY>, MAP extends 
      * @param logLevel the log level to log the message.
      */
     protected void log(final String message, final LogLevel logLevel) {
-        Printer.print(message, Printer.getFilteredLogLevel(logLevel, isSandbox()), logger);
+        Printer.print(message, LogLevelFilter.getFilteredLogLevel(logLevel, isSandbox()), logger);
     }
 
     /**

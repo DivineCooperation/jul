@@ -39,6 +39,8 @@ public class HandleStateTransformer {
                 return HandleState.newBuilder().setPosition(0).build();
             case "OPEN":
                 return HandleState.newBuilder().setPosition(90).build();
+            case "TILTED":
+                return HandleState.newBuilder().setPosition(180).build();
             default:
                 throw new CouldNotTransformException("Could not transform " + String.class.getName() + "! " + String.class.getSimpleName() + "[" + value + "] is not a valid " + HandleState.class.getSimpleName() + "!");
         }
@@ -50,6 +52,8 @@ public class HandleStateTransformer {
                 return "CLOSED";
             case 90:
                 return "OPEN";
+            case 180:
+                return "TILTED";
             default:
                 throw new CouldNotTransformException("Could not transform " + HandleState.class.getName() + "[" + value + "] to " + String.class.getSimpleName() + "!");
         }

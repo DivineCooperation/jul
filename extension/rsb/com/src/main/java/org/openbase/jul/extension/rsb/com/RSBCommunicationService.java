@@ -751,8 +751,10 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
      * @throws NotInitializedException
      */
     public void validateInitialization() throws NotInitializedException {
-        if (!initialized) {
-            throw new NotInitializedException("communication service");
+        synchronized (managableLock) {
+            if (!initialized) {
+                throw new NotInitializedException("communication service");
+            }
         }
     }
 

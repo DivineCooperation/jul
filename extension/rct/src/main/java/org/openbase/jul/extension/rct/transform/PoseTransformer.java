@@ -31,7 +31,7 @@ import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
 
 /**
- *
+ * todo: should be moved to rct after data types are moved to rst.
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PoseTransformer {

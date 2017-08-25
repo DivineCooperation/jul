@@ -728,7 +728,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
                                 // validate connection
                                 try {
                                     ping().get(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                                } catch (ExecutionException | java.util.concurrent.TimeoutException exx) {
+                                } catch (ExecutionException | java.util.concurrent.TimeoutException | CancellationException exx) {
                                     // cancel call if connection is broken
                                     internalCallFuture.cancel(true);
                                 }
@@ -883,7 +883,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
                     }
                     return null;
                 }
-            } catch (CouldNotPerformException ex) {
+            } catch (CouldNotPerformException | CancellationException ex) {
                 if (shutdownInitiated || !isActive() || getConnectionState().equals(DISCONNECTED)) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Sync aborted of " + getScopeStringRep(), ex), logger, LogLevel.DEBUG);
                 } else {
@@ -956,8 +956,8 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
             logger.debug("Wait for " + this.toString() + " data...");
             getDataFuture().get();
             dataObservable.waitForValue();
-        } catch (ExecutionException ex) {
-            throw new TimeoutException("Could not wait for data!", ex);
+        } catch (ExecutionException | CancellationException ex) {
+            throw new CouldNotPerformException("Could not wait for data!", ex);
         }
     }
 
@@ -982,7 +982,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
                 throw new java.util.concurrent.TimeoutException("Data timeout is reached!");
             }
             dataObservable.waitForValue(partialTimeout, TimeUnit.MILLISECONDS);
-        } catch (java.util.concurrent.TimeoutException | CouldNotPerformException | ExecutionException ex) {
+        } catch (java.util.concurrent.TimeoutException | CouldNotPerformException | ExecutionException | CancellationException ex) {
             throw new NotAvailableException("Data is not yet available!", ex);
         }
     }
@@ -1302,7 +1302,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> implements RS
                     }
                 }
                 throw ex;
-            } catch (CouldNotPerformException | ExecutionException ex) {
+            } catch (CouldNotPerformException | ExecutionException | CancellationException ex) {
                 throw new CouldNotPerformException("Could not compute ping!", ex);
             }
         });

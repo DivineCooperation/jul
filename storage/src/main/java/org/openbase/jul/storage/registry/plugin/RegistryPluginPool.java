@@ -170,6 +170,27 @@ public class RegistryPluginPool<KEY, ENTRY extends Identifiable<KEY>, P extends 
     }
 
     @Override
+    public void afterConsistencyModification(final ENTRY entry) throws CouldNotPerformException {
+        if (pluginList.isEmpty() || lock.isWriteLockedByCurrentThread()) {
+            return;
+        }
+
+        lock.writeLock().lock();
+        try {
+            for (P plugin : pluginList) {
+                try {
+                    plugin.afterConsistencyModification(entry);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about Entry[" + entry + "] modification!", ex), logger, LogLevel.ERROR);
+                    assert !JPService.testMode(); // fail during unit tests.
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
     public void beforeRemove(final ENTRY entry) throws RejectedException {
         if (pluginList.isEmpty() || lock.isWriteLockedByCurrentThread()) {
             return;
@@ -325,10 +346,7 @@ public class RegistryPluginPool<KEY, ENTRY extends Identifiable<KEY>, P extends 
                     throw ex;
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not inform RegistryPlugin[" + plugin + "] about finished consistency check!", ex), logger, LogLevel.ERROR);
-                    // ISSUE https://github.com/openbase/bco.registry/issues/11
-                    // If the following line is activated some unit registry tests are failing during mockup registry init phase.
                     assert !JPService.testMode(); // fail during unit tests.
-                    break; // please remove break after issue fix.  
                 }
             }
         } finally {
